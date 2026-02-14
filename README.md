@@ -106,39 +106,40 @@ sequenceDiagram
     participant TestClass as "AccountServiceTest"
     participant Svc as "AccountService (Subject)"
 
-    Note over Runner, Svc: --- Test Lifecycle Begins ---
+    Note over Runner, Svc: 🟢 SETUP PHASE
     Runner->>TestClass: Instantiate Class
     Runner->>TestClass: Invoke @BeforeEach setup()
     activate TestClass
-    TestClass->>Svc: new AccountService() (balance=1000)
-    TestClass-->>Runner: setup() complete
+    TestClass->>Svc: new AccountService(1000.0)
+    TestClass-->>Runner: setup() done
     deactivate TestClass
 
-    Note over Runner, Svc: --- Executing testWithdraw() ---
-    Runner->>TestClass: Invoke testMethod()
+    Note over Runner, Svc: 🔵 ACTION PHASE (withdraw)
+    Runner->>TestClass: Invoke testMultipleAssertion()
     activate TestClass
 
-    rect rgb(255, 249, 196)
-        Note right of TestClass: Phase 1: Action & Internal Assertions
-        TestClass->>Svc: withdraw(100)
-        activate Svc
-        Note right of Svc: if -ea: assert amount > 0
-        Svc->>Svc: Update Balance (900)
-        Note right of Svc: if -ea: assert balance > 0
-        Svc-->>TestClass: return
-        deactivate Svc
-    end
+    TestClass->>Svc: withdraw(100)
+    activate Svc
 
-    rect rgb(225, 190, 231)
-        Note right of TestClass: Phase 2: JUnit Verification (assertAll)
-        TestClass->>Svc: getBalance()
-        Svc-->>TestClass: 900.0
-        TestClass->>TestClass: assertEquals(900.0, balance)
+    Note right of Svc: If -ea: assert amount > 0
+    Svc->>Svc: Internal Logic: balance = 900
+    Note right of Svc: If -ea: assert balance > 0
 
-        TestClass->>TestClass: assertTrue(balance > 0)
+    Svc-->>TestClass: return (void)
+    deactivate Svc
 
-        TestClass->>TestClass: assertNotNull(service)
-    end
+    Note over Runner, Svc: 🟣 VERIFICATION PHASE (assertAll)
+    Note right of TestClass: assertAll("Account State Check")
+
+    TestClass->>Svc: getBalance()
+    Svc-->>TestClass: 900.0
+    TestClass->>TestClass: assertEquals(900.0, 900.0)
+
+    TestClass->>Svc: getBalance()
+    Svc-->>TestClass: 900.0
+    TestClass->>TestClass: assertTrue(900.0 > 0)
+
+    TestClass->>TestClass: assertNotNull(service)
 
     TestClass-->>Runner: Test Passed
     deactivate TestClass
